@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍭 成語普通話挑戰 🍭</title>
+    <style>
+        /* 保留之前的精美樣式 */
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@500;700&display=swap');
+        :root { --primary: #6C5CE7; --accent: #FF9F43; --success: #27AE60; --danger: #EE5253; --q-bg: #E8F4FD; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; padding: 10px; }
+        .main-container { background: #FFFFFF; width: 100%; max-width: 600px; padding: 30px; border-radius: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); border: 6px solid #FFF; }
+        h1 { font-family: 'ZCOOL KuaiLe', cursive; text-align: center; color: var(--primary); font-size: 2.5rem; margin: 0 0 20px 0; }
+        .info-panel { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .info-badge { padding: 10px 20px; border-radius: 20px; font-weight: bold; color: white; font-size: 1.1rem; }
+        .progress-badge { background: var(--accent); }
+        .score-badge { background: var(--success); }
+        .question-display { background: var(--q-bg); padding: 30px; border-radius: 25px; border: 3px solid #3498db; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; line-height: 1.8; color: #2c3e50; }
+        .highlight-blank { color: var(--danger); font-weight: 900; background: #FFF; padding: 2px 15px; border-radius: 10px; margin: 0 5px; border-bottom: 4px solid var(--danger); }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-option { background: white; border: 2px solid #DCDDE1; padding: 20px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .btn-option:hover { border-color: var(--primary); background: #F8F7FF; transform: translateY(-3px); }
+        .py-text { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 5px; }
+        .id-text { font-size: 1.5rem; font-weight: bold; color: #2d3436; }
+        .is-right { background-color: var(--success) !important; color: white !important; }
+        .is-wrong { background-color: var(--danger) !important; color: white !important; }
+        .is-right *, .is-wrong * { color: white !important; }
+        #btn-next { background: var(--primary); color: white; border: none; padding: 15px 50px; border-radius: 40px; font-size: 1.3rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #4834d4; display: none; width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>🎡 成語遊樂園</h1>
+    <div class="info-panel">
+        <div class="info-badge progress-badge">進度: <span id="cur-q">0</span>/45</div>
+        <div class="info-badge score-badge">得分: <span id="cur-s">0</span></div>
+    </div>
+    <div class="question-display" id="q-text">載入中...</div>
+    <div class="options-grid" id="opt-container"></div>
+    <button id="btn-next" onclick="loadQuestion()">下一題 ➜</button>
+</div>
+
+<script>
+    const data = [
+        { idiom: "一笑置之", pinyin: "yī xiào zhì zhī", questions: ["面對網路上的惡意留言，他選擇展現大度，僅僅是（），完全不放在心上。", "既然這只是一場無心的誤會，我們就大方地（）吧，沒必要爭論。", "他早已習慣了旁人的嘲諷，總能以豁達的心態（），繼續朝著目標邁進。"]},
+        { idiom: "七竅生煙", pinyin: "qī qiào shēng yān", questions: ["看到辛苦熬夜完成的企劃案被隨手撕毀，他氣得（），幾乎要大聲咆哮。", "原本應準時送達的貨物遲到了三天，讓老闆急得（），怒斥負責人。", "這名學生屢次違反校規且不知悔改，導師被他氣得（），決定請家長。"]},
+        { idiom: "不寒而慄", pinyin: "bù hán ér lì", questions: ["想起剛才那場驚心動魄的車禍現場，雖然沒受傷，但我依然感到（）。", "這部恐怖電影的結局那個陰冷的微笑，令人感到（），背脊發涼。", "聽完這樁慘絕人寰的社會案件報導後，在場的聽眾無不感到（）。"]},
+        { idiom: "如坐針氈", pinyin: "rú zuò zhēn zhān", questions: ["由於他沒準備好報告內容，面對主管的質詢，他在座位上感到（）。", "在等待手術結果的那段時間，家屬們在走廊焦慮地走動，心境（）。", "他因說謊而感到羞愧，坐在大家面前接受表揚時，反而覺得（）。"]},
+        { idiom: "自暴自棄", pinyin: "zì bào zì qì", questions: ["即使這次考試成績不如預期，你應該檢討原因，千萬不可以（）。", "自從事業遭受重大打擊後，他便開始（），每天藉酒澆愁。", "唯有保持正向積極的態度，才能跨越低谷，如果（）就真的沒機會。"]},
+        { idiom: "拍案叫絕", pinyin: "pāi àn jiào jué", questions: ["這部偵探小說的情節環環相扣，結局的出人意料更是令人（）。", "魔術師表演了一場神乎其技的脫逃秀，全場觀眾無不（），報以掌聲。", "這篇社論對社會問題的剖析非常精闢，見解深刻，讀來令人（）。"]},
+        { idiom: "受寵若驚", pinyin: "shòu chǒng ruò jīng", questions: ["沒想到校長竟然親自到班級為我頒發獎狀，這份榮譽讓我感到（）。", "當國際巨星親切地與路邊小粉絲握手合影時，那名女孩顯得（）。", "他在公司只是個新進職員，卻意外獲得總經理的公開讚賞，讓（）。"]},
+        { idiom: "耿耿於懷", pinyin: "gěng gěng yú huái", questions: ["雖然比賽已經過去多年，但他對自己最後一刻的失手依然（）。", "朋友之間難免有摩擦，既然對方已道歉，你就不必對那件小事（）。", "他總是因為當年沒有見到外公最後一面而（），成了心中遺憾。"]},
+        { idiom: "恍然大悟", pinyin: "huǎng rán dà wù", questions: ["經過老師耐心且深入淺出的講解後，原本困擾我的難題，我終於（）。", "他一直以為是小王偷了筆，直到真相大白後才（），原來是誤會。", "看到這封信的內容，他這才（），明白父母多年來是用心良苦。"]},
+        { idiom: "疾惡如仇", pinyin: "jí è rú chóu", questions: ["他是一位（）的正義律師，對於任何非法勾當都絕對不會妥協。", "這位警官辦案時（），誓言要將所有犯罪份子繩之以法。", "在那部武俠小說中，男主角（）的性格，讓他決定挑戰惡霸。"]},
+        { idiom: "庸人自擾", pinyin: "yōng rén zì rǎo", questions: ["這件意外根本還沒發生，你卻已經開始擔心後果，這完全是在（）。", "生活本來就很單純，很多時候都是我們自己想得太複雜，才會（）。", "只要凡事問心無愧就好，不要在意流言蜚語，否則只會（）。"]},
+        { idiom: "悠然自得", pinyin: "yōu rán zì dé", questions: ["假日的午後，他最喜歡坐在窗邊，一邊喝咖啡一邊讀書，顯得（）。", "鄉間的小徑上，老翁牽著牛慢慢走著，那種（）的神情非常自在。", "他退休後在山腳下種菜，過著日出而作、日落而息且（）的生活。"]},
+        { idiom: "萬念俱灰", pinyin: "wàn niàn jù huī", questions: ["在經歷了接二連三的失敗與打擊後，他感到（），甚至想離家。", "所有的努力在最後一刻全部泡湯，看著眼前的廢墟，他（）。", "對於一個已經（）的人來說，任何的安慰有時都顯得那麼蒼白。"]},
+        { idiom: "樂不思蜀", pinyin: "lè bù sī shǔ", questions: ["這裡的風景優美，還有各種設施，讓孩子們玩得（），不想回家。", "他在留學期間結交了許多好友，每天生活多采多姿，簡直是（）。", "原本計畫只待三天，沒想到當地美食太誘人，讓（），多留一週。"]},
+        { idiom: "驚惶失措", pinyin: "jīng huáng shī cuò", questions: ["當火警警報器突然大聲作響時，辦公室的人們（），紛紛奔逃。", "面對突如其來的地震，他被嚇得（），竟然愣在客廳忘記掩護。", "小明發現自己弄丟了媽媽最心愛的玉鐲，（）之下，躲起來大哭。"]}
+    ];
+
+    let pool = [];
+    let score = 0;
+    let count = 0;
+    let currentAns = "";
+
+    // 【重要：強制普通話語音設置】
+    let synth = window.speechSynthesis;
+    let voices = [];
+
+    function loadVoices() {
+        voices = synth.getVoices();
+    }
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function speakMandarin(txt) {
+        if (synth.speaking) synth.cancel();
+        const utter = new SpeechSynthesisUtterance(txt);
+        
+        // 優先尋找普通話（zh-CN 或 zh-TW）
+        const targetVoice = voices.find(v => v.lang === 'zh-CN' || v.lang === 'zh-TW');
+        if (targetVoice) {
+            utter.voice = targetVoice;
+        }
+        utter.lang = 'zh-CN'; // 設定語系為大陸普通話/國語
+        utter.rate = 0.9;
+        synth.speak(utter);
+    }
+
+    data.forEach(i => i.questions.forEach(q => pool.push({q:q, a:i.idiom, p:i.pinyin})));
+    pool.sort(() => Math.random() - 0.5);
+
+    function loadQuestion() {
+        if (count >= 45) { alert("恭喜完成挑戰！"); count = 0; score = 0; pool.sort(() => Math.random() - 0.5); }
+        const item = pool[count];
+        currentAns = item.a;
+        document.getElementById('q-text').innerHTML = `${item.q.replace("（）", '<span class="highlight-blank">？</span>')}`;
+        const container = document.getElementById('opt-container');
+        container.innerHTML = '';
+        document.getElementById('btn-next').style.display = 'none';
+
+        let opts = [{t:item.a, p:item.p}];
+        let others = data.filter(x => x.idiom !== item.a).sort(() => Math.random() - 0.5);
+        for(let i=0; i<3; i++) opts.push({t:others[i].idiom, p:others[i].pinyin});
+        opts.sort(() => Math.random() - 0.5);
+
+        opts.forEach(o => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerHTML = `<span class="py-text">${o.p}</span><span class="id-text">${o.t}</span>`;
+            btn.onclick = () => check(btn, o.t);
+            container.appendChild(btn);
+        });
+    }
+
+    function check(btn, sel) {
+        const all = document.querySelectorAll('.btn-option');
+        all.forEach(b => b.disabled = true);
+        if (sel === currentAns) {
+            btn.classList.add('is-right');
+            score += 10;
+            speakMandarin("答對了，" + currentAns);
+        } else {
+            btn.classList.add('is-wrong');
+            all.forEach(b => { if(b.querySelector('.id-text').innerText === currentAns) b.classList.add('is-right'); });
+            speakMandarin("答錯了，正確答案是 " + currentAns);
+        }
+        count++;
+        document.getElementById('cur-q').innerText = count;
+        document.getElementById('cur-s').innerText = score;
+        document.getElementById('btn-next').style.display = 'block';
+    }
+
+    window.onload = loadQuestion;
+</script>
+</body>
+</html>
